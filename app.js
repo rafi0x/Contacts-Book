@@ -19,7 +19,7 @@ app.use(express.urlencoded({ extended: true }));
 app.use("/contact", contactRoute);
 // index route
 app.get("/", (req, res) => {
-  res.render("index");
+  res.redirect("/contact");
 });
 
 // database and server connection
