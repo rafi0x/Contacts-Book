@@ -1,29 +1,22 @@
 {
-  "name": "crudapp",
+  "name": "contactbook",
   "version": "1.0.0",
   "description": "",
   "main": "app.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
     "start": "nodemon app"
   },
   "keywords": [],
-  "author": "",
+  "author": "rafi0x",
   "license": "ISC",
   "dependencies": {
     "ejs": "^3.1.6",
     "express": "^4.17.1",
     "express-validator": "^6.13.0",
     "mongoose": "^5.12.14",
-    "morgan": "^1.10.0",
-    "nodemon": "^2.0.7"
+    "morgan": "^1.10.0"
   },
   "devDependencies": {
-    "eslint": "^7.29.0",
-    "eslint-config-airbnb-base": "^14.2.1",
-    "eslint-config-prettier": "^8.3.0",
-    "eslint-plugin-import": "^2.23.4",
-    "eslint-plugin-prettier": "^3.4.0",
-    "prettier": "^2.3.1"
+    "nodemon": "^2.0.7"
   }
 }
