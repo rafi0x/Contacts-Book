@@ -1,13 +1,33 @@
 const { validationResult } = require("express-validator");
-const ContactList = require("../Schema/Contact");
+const Contacts = require("../Schema/Contact");
 
 // showing data
-exports.getAlldata = (req, res) => {
-  ContactList.find()
-    .then((data) => {
-      res.render("contact", { data, error: {} });
-    })
-    .catch((err) => console.log(err));
+exports.getAlldata = async (req, res) => {
+  try {
+    const allContacts = await Contacts.find();
+    res.locals.data = allContacts;
+    return res.render("contact");
+  } catch (error) {
+    console.log(err);
+  }
+};
+exports.exportData = async (req, res) => {
+  try {
+    const allContacts = await Contacts.find({}, { _id: false, __v: false });
+    let expContact = [];
+    allContacts.map((contact) => {
+      let contactObj = {
+        name: contact.name,
+        email: contact.email.join(","),
+        phone: contact.phone.join(","),
+      };
+      expContact.push(contactObj);
+    });
+    if (expContact.length > 0) return res.json(expContact);
+    else return res.json(500, { err: "server error" });
+  } catch (error) {
+    console.log(error);
+  }
 };
 
 // save and update data
@@ -21,7 +41,7 @@ exports.postSaveData = async (req, res) => {
   }
   try {
     const { name, email, phone, id } = req.body;
-    const contactListData = new ContactList({
+    const contactListData = new Contacts({
       name,
       email,
       phone,
@@ -36,7 +56,7 @@ exports.postSaveData = async (req, res) => {
 // Delete data
 exports.getDeleteData = (req, res) => {
   const { id } = req.params;
-  ContactList.findOneAndDelete({}, { _id: id })
+  Contacts.findOneAndDelete({}, { _id: id })
     .then(() => res.redirect("/contact"))
     .catch((err) => console.log(err));
 };
@@ -55,7 +75,7 @@ exports.postEditData = async (req, res) => {
     });
   }
   try {
-    await ContactList.findOneAndUpdate(
+    await Contacts.findOneAndUpdate(
       { _id: id },
       {
         $set: {
@@ -68,5 +88,24 @@ exports.postEditData = async (req, res) => {
     return res.json({ save: "success" });
   } catch (error) {
     console.error(error);
+  }
+};
+
+exports.searchContacts = async (req, res) => {
+  const input = req.params.input.replace(/[-\/\\^$*+?.()|[\]{}]/g, "\\$&");
+  const keyword = new RegExp(input, "i");
+  console.log(keyword);
+  try {
+    const foundContact = await Contacts.find(
+      {
+        $or: [{ name: keyword }, { email: keyword }, { phone: keyword }],
+      },
+      "name email phone"
+    );
+    console.log(foundContact);
+    return res.status(200).json(foundContact);
+  } catch (err) {
+    console.log(err);
+    res.status(500).json(err);
   }
 };

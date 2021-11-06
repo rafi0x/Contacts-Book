@@ -14,7 +14,7 @@ const contactValidator = [
       const data = input.split(",");
       if (data.length <= 3) {
         return data.map((email) => {
-          const mail = phone.replace(/\s*/g, "");
+          const mail = email.replace(/\s*/g, "");
           if (regex.test(mail)) {
             return true;
           }

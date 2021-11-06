@@ -1,6 +1,10 @@
 const express = require("express");
 const morgan = require("morgan");
 const mongosse = require("mongoose");
+
+// modddlewares
+const middlewares = require("./middlewares");
+
 // getting contactRoute
 const contactRoute = require("./router");
 
@@ -9,11 +13,9 @@ const app = express();
 
 // using ejs as view engine
 app.set("view engine", "ejs");
-// using morgan in app
-app.use(morgan("dev"));
-// json parser
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
+
+// using middleware
+middlewares(app);
 
 // using contactRoute in /contact
 app.use("/contact", contactRoute);
@@ -23,7 +25,7 @@ app.get("/", (req, res) => {
 });
 
 // database and server connection
-const PORT = process.env.PORT || "5050";
+const PORT = process.env.PORT || "5000";
 const databaseUrl = "mongodb://localhost:27017/admin";
 mongosse
   .connect(databaseUrl, {

@@ -4,11 +4,12 @@
     <meta charset="UTF-8" />
     <meta http-equiv="X-UA-Compatible" content="IE=edge" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Welcome to a dynamic contact list</title>
+    <title>Contact Book</title>
     <link
       rel="stylesheet"
       href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css"
     />
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.17.3/xlsx.min.js"></script>
     <style>
       .inputs {
         display: flex;
@@ -29,24 +30,29 @@
       <h1 class="p-5">Dynamic Contact List</h1>
       <div class="col-lg-12 d-flex">
         <button
-          class="btn btn-primary mr-3"
+          class="btn btn-outline-primary mr-3"
           data-toggle="modal"
           data-target="#exampleModal"
         >
           Add Contact
         </button>
-        <div class="col-lg-8">
-          <form action="" method="post">
+        <div class="col-lg-9">
+          <form action="/contact/edit" method="post">
             <input
+              id="contact-search"
               type="text"
               class="form-control"
               name="search"
               placeholder="search"
             />
+            <div id="search-error" class="invalid-feedback d-block"></div>
           </form>
         </div>
+        <button id="export-btn" class="btn btn-outline-success mr-3">
+          Export
+        </button>
       </div>
-      <table class="table mt-3">
+      <table id="main-table" class="table mt-3">
         <thead>
           <tr>
             <th scope="col">id</th>
@@ -56,7 +62,8 @@
             <th scope="col">Action</th>
           </tr>
         </thead>
-        <tbody>
+        <tbody class="search-result d-none"></tbody>
+        <tbody class="default-result">
           <% let serial = 1 %> <% for(let i of data) { %>
           <tr>
             <td><%= serial++ %></td>
@@ -91,8 +98,7 @@
             </td>
             <td>
               <button
-                type="submit"
-                class="btn btn-warning edit-btn"
+                class="btn btn-outline-warning edit-btn mr-3"
                 data-toggle="modal"
                 data-target="#editModal"
                 data-name="<%= i.name %>"
@@ -100,11 +106,10 @@
                 data-phone="<%= i.phone %>"
                 data-id="<%= i._id %>"
               >
-                edit
-              </button>
-            </td>
-            <td>
-              <a href="/contact/delete/<%= i._id %>" class="btn btn-danger"
+                Edit</button
+              ><a
+                href="/contact/delete/<%= i._id %>"
+                class="btn btn-outline-danger"
                 >Delete</a
               >
             </td>
@@ -326,7 +331,7 @@
         </div>
       </div>
     </div>
-
+    <script src="assets/js/contact.js"></script>
     <script
       src="https://code.jquery.com/jquery-3.2.1.slim.min.js"
       integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN"
@@ -342,109 +347,5 @@
       integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl"
       crossorigin="anonymous"
     ></script>
-    <script>
-      let emailAddBtn = document.querySelector("#more-email");
-      let phoneAddBtn = document.querySelector("#more-phone");
-      let editBtn = document.querySelectorAll(".edit-btn");
-
-      let newContactForm = document.querySelector("#new-contact");
-      let editContactForm = document.querySelector("#edit-contact");
-
-      inter("email", emailAddBtn);
-      inter("phone", phoneAddBtn);
-
-      newContactForm.onsubmit = async function (e) {
-        try {
-          e.preventDefault();
-
-          document
-            .querySelectorAll(".invalid-feedback")
-            .forEach((e) => (e.innerHTML = ""));
-
-          let formData = new URLSearchParams(new FormData(this));
-
-          let response = await fetch(this.action, {
-            method: this.method,
-            body: formData,
-          });
-
-          let result = await response.json();
-
-          if (result.error) {
-            Object.keys(result.error).forEach((fieldName) => {
-              // getting error message field for show message
-              const errFields = document.querySelector(`#${fieldName}-error`);
-              errFields.innerHTML = result.error[fieldName].msg;
-            });
-          } else {
-            console.log("success");
-            setTimeout(() => {
-              location.reload();
-            }, 1000);
-          }
-        } catch (error) {
-          console.log(error);
-        }
-      };
-
-      function inter(name, btn) {
-        let i = 0;
-        btn.onclick = () => {
-          i++;
-          if (i >= 2) {
-            btn.classList.add("d-none");
-          }
-          btn.insertAdjacentHTML(
-            "beforebegin",
-            `<input type="text" class="form-control mb-2" name="${name}" placeholder="${name}"/>`
-          );
-        };
-      }
-
-      editBtn.forEach((btn) => {
-        btn.onclick = () => {
-          document
-            .querySelectorAll(".invalid-feedback")
-            .forEach((e) => (e.innerHTML = ""));
-          editContactForm[0].value = btn.dataset.name;
-          editContactForm[1].value = btn.dataset.email;
-          editContactForm[2].value = btn.dataset.phone;
-          editContactForm[3].value = btn.dataset.id;
-        };
-      });
-
-      editContactForm.onsubmit = async (e) => {
-        try {
-          e.preventDefault();
-
-          document
-            .querySelectorAll(".invalid-feedback")
-            .forEach((e) => (e.innerHTML = ""));
-
-          let formData = new URLSearchParams(new FormData(editContactForm));
-          let response = await fetch("/contact/edit", {
-            method: "POST",
-            body: formData,
-          });
-
-          let result = await response.json();
-          console.log(result.error);
-          if (result.error) {
-            Object.keys(result.error).forEach((fieldName) => {
-              // getting error message field for show message
-              const errFields = document.querySelector(`#${fieldName}-error`);
-              errFields.innerHTML = result.error[fieldName].msg;
-            });
-          } else {
-            console.log("success");
-            setTimeout(() => {
-              location.reload();
-            }, 1000);
-          }
-        } catch (error) {
-          console.error(error);
-        }
-      };
-    </script>
   </body>
 </html>
